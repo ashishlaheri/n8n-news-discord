@@ -1,0 +1,267 @@
+{
+  "name": "My first n8n",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        -192
+      ],
+      "id": "ed44a27c-c7d4-46f9-b8e5-d63c68c020ff",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://www.bleepingcomputer.com/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -288,
+        -192
+      ],
+      "id": "5fd4c7b2-9e98-4aaf-a95b-3c17d20018bf",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "maxItems": 5
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -192
+      ],
+      "id": "b3e81e8e-c745-409d-b7dd-de791bc40076",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        208,
+        32
+      ],
+      "id": "8951d096-195f-4631-9b16-0637023f4318",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "19dLFqbbBXSr8nv3",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=just summarize the content in 15 words  {{ $json.content }}\n",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        208,
+        -192
+      ],
+      "id": "bbe83536-d0b7-4ae4-8125-07745e732133",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=Here is the news for you today!\nfrom- {{ $('Limit').item.json.creator }}\n{{ $('Limit').item.json.title }}\n{{ $json.text }}\n{{ $('Limit').item.json.link }} \n{{ $('Limit').item.json.pubDate }}\nAND!! INTERNET HOW IT'S GOING?\n{{ $json.content.parts[0].text }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        48
+      ],
+      "id": "48998357-bf7c-41f0-9cf9-a79739ff01ef",
+      "name": "Discord",
+      "webhookId": "0112230a-1719-49f8-b544-9f90b1d81647",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "frVfHS19L0NVAKfV",
+          "name": "Discord Webhook account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        736,
+        80
+      ],
+      "id": "ebbf5f52-c077-46b0-80c9-4c04346c7f9a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "command": "ping 1.1.1.1 -c 4\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        128
+      ],
+      "id": "09df0322-b8a2-4de3-8f00-e8c6adb46afa",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=make this output of ping test in a very funn way just like rayan reynolds of deadpool wiil make in 15 words: {{ $json.stdout }} "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        144
+      ],
+      "id": "2bc572ba-0564-4ff5-b16b-019e7ed527ed",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "19dLFqbbBXSr8nv3",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord": {
+      "main": [
+        []
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e2cc21e9-c557-431d-b2b6-56e9ba0a8962",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fbb8b022aa9b06dc97ddb999396969a72cb5c419ccbbecac4ee2ee4611046d0c"
+  },
+  "id": "eYRYn2SIIn9Bgat3",
+  "tags": []
+}
